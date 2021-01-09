@@ -1,0 +1,42 @@
+services:
+
+  wordpress:
+    image: wordpress
+    container_name: dockerwp_wp
+    ports:
+      - 80:80
+    environment:
+      WORDPRESS_DB_HOST: dockerwp_db
+      WORDPRESS_DB_USER: admin
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: dockerwp_dev
+    volumes:
+      - ./wp:/var/www/html
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    depends_on:
+      - db
+    links:
+      - db
+
+  db:
+    image: mysql:5.7
+    container_name: dockerwp_db
+    environment:
+      MYSQL_DATABASE: dockerwp_dev
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: wordpress
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - ./db:/var/lib/mysql
+      #- ./export.sql:/docker-entrypoint-initdb.d/export.sql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: dockerwp_phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - 992:80
+    environment:
+      PMA_HOST: dockerwp_db
+      UPLOAD_LIMIT: 64M
